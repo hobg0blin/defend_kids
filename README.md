@@ -23,8 +23,11 @@ Right now it just fills out the “info” box on the form with a markov-chain g
 The scraper should automatically wait until you’ve done so, and alert you in the terminal.
 
 #### Rate limiting
+
+Don't worry if you see this! 
+
 ![Rate limited](./blocked.png)
-They’re using cloudflare to prevent DDoS attacks, so if it pops up saying you’re rate limited, just wait a bit. The scraper will automatically reload and eventually you it should be able to access the page.
+They’re using cloudflare to prevent DDoS attacks, so if this pops up, just wait a bit. The scraper will automatically reload and eventually you it should be able to access the page.
 
 
 
