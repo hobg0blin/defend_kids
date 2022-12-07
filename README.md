@@ -7,7 +7,7 @@ This is a quick and dirty little scraper to automatically fill out the form on d
 
 2. Clone the repository and `cd defend_kids`
 
-3. pip install -r requirements.txt` to install all the requirements.
+3. `pip install -r requirements.txt` to install all the requirements.
 
 4. In the `.env` file, change “CHROME_VERSION” to whatever version of chrome you’re running- this should be in Chrome > Settings > About Chrome.
 
