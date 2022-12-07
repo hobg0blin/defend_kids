@@ -1,6 +1,8 @@
 # PROTECT TRANS PEOPLE
 
-This is a quick and dirty little scraper to automatically fill out the form on defendkidstx.com and hopefully make Texas’ life a little harder when it comes to harassing trans people. It will run indefinitely, although it will occasionally require you to fill out a captcha to submit the form.
+This is a quick and dirty little scraper to automatically fill out the form on defendkidstx.com and hopefully make Texas’ life a little harder when it comes to harassing trans people. It will run indefinitely, although it will occasionally require you to fill out a captcha to submit the form. 
+
+Tested on Ubuntu 22, should work out of the box on Mac, I have no idea about Windows but you're welcome to try. 
 
 ## Running the scraper
 1. Make sure you have [python installed](https://realpython.com/installing-python/)
