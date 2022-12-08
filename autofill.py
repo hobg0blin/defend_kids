@@ -15,7 +15,7 @@ load_dotenv()
 
 
 cities = ["Dallas", "Austin", "Houston", "Hazel", "Fort Worth"]
-corpus = open("./corpus.txt").read()
+corpus = open("./corpus.txt",encoding='utf8').read()
 model = markovify.Text(corpus)
 input_text = ""
 for (i) in range(random.randint(1, 10)):
