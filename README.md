@@ -1,8 +1,8 @@
-# PROTECT TRANS PEOPLE
+# PROTECT QUEER PEOPLE
 
-This is a quick and dirty little scraper to automatically fill out the form on defendkidstx.com and hopefully make Texas’ life a little harder when it comes to harassing trans people. It will run indefinitely, although it will occasionally require you to fill out a captcha to submit the form. 
+This is a quick and dirty little scraper to automatically fill out the form on defendkidstx.com and hopefully make Texas’ life a little harder when it comes to harassing queer people. It will run indefinitely, although it will occasionally require you to fill out a captcha to submit the form. 
 
-Tested on Ubuntu 22, should work out of the box on Mac, I have no idea about Windows but you're welcome to try. 
+Confirmed to work on Linux and Windows, should work out of the box on Mac. 
 
 ## Running the scraper
 1. Make sure you have [python installed](https://realpython.com/installing-python/)
@@ -36,4 +36,4 @@ They’re using cloudflare to prevent DDoS attacks, so if this pops up, just wai
 
 ##  Contributing
 
-They’re doing some mildly clever stuff to try and get around automating this process, and it’ll probably change as it goes along. Please, for the love of god, feel free to fork or make pull requests to update this or make it run on Windows.
+They’re doing some mildly clever stuff to try and get around automating this process, and it’ll probably change as it goes along. Please, for the love of god, feel free to fork or make pull requests to update this, especially if you have a better solution for evading captchas.
