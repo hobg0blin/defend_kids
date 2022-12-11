@@ -10,6 +10,8 @@ import undetected_chromedriver as uc
 import names
 import markovify
 import os
+import sys
+from anticaptchaofficial.recaptchav2proxyless import *
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -42,17 +44,24 @@ class FormType():
 
 
 class Selenium():
+    use_solver = False
     def __init__(self):
         self.driver = uc.Chrome(use_subprocess=True, version_main=os.getenv('CHROME_VERSION'))
-        self.wait = WebDriverWait(self.driver, 3000000000);
+        self.wait = WebDriverWait(self.driver, 3000000000)
+        self.solver = recaptchaV2Proxyless()
 
     def run(self):
         print('reloading')
         self.driver.get('https://defendkidstx.com/')
         time.sleep(random.randint(5, 10))
-#        self.wait.until(lambda x: self.check_captcha())
+        # setup anti-captcha solver
+        self.init_solver()
+        if not self.use_solver:
+            print("Please complete captcha")
+            self.wait.until(lambda x: self.check_captcha())
+
         self.wait.until(lambda x: self.check_has_button())
-        time.sleep(5)
+        time.sleep(1)
         self.fill_form()
         self.driver.close()
         self.__init__()
@@ -66,7 +75,8 @@ class Selenium():
             return True
         except NoSuchElementException:
             print('temporarily blocked')
-#            self.wait.until(lambda x: self.check_captcha())
+            if not self.use_solver:
+                self.wait.until(lambda x: self.check_captcha())
             time.sleep(random.randint(5, 20))
             self.driver.refresh()
             return False
@@ -119,6 +129,45 @@ class Selenium():
                 return
         except NoSuchElementException:
                 print(f"couldn't find button {button[1]}")
+    def init_solver(self):
+        api_key = os.getenv("ANTICAPTCHA_API_KEY")
+        if len(api_key) == 0:
+            print("No Anti-Captcha API Key Provided, disabling")
+            return
+        if len(api_key) != 32:
+            print(f"Invalid Anti-Captcha API Key: {api_key}")
+            return
+        self.solver.set_verbose(1)
+        self.solver.set_key(api_key)
+        self.solver.set_website_url("https://www.defendkidstx.com/")
+        self.solver.set_website_key("6Lf4g08jAAAAADLHLYYA6jsr0qXWgOM_btlJP3iD")
+        # use_solver determines if anything runs when any anti-captcha functions is called
+        self.use_solver = True
+
+    def get_captcha_solution(self) -> str:
+        if not self.use_solver:
+            print("Anti-Captcha Disabled")
+            return ""
+        print("[BEGIN CAPTCHA SOLVE]")
+        g_response = self.solver.solve_and_return_solution()
+        if g_response != 0:
+            print("g-response: "+g_response)
+        else:
+            print("task finished with error "+self.solver.error_code)
+            sys.exit(2)
+        print("[END CAPTCHA SOLVE]")
+        return g_response
+
+    def fill_captcha(self, captcha_solution):
+        if not self.use_solver:
+            return True
+        try:
+            element = self.driver.find_element(
+                By.XPATH, ("//textarea[@name='g-recaptcha-response']"))
+            element.__setattr__("value", captcha_solution)
+            # element.send_keys(captcha_solution)
+        except NoSuchElementException:
+            print("could not find recaptcha textarea")
             return False
         return True
 
@@ -127,6 +176,7 @@ class Selenium():
         name = names.get_full_name()
         # they have two alternate input forms, presumably to prevent me from doing things like this - this should account for both
         form_type = self.get_form_type()
+        captcha_solution = self.get_captcha_solution()
         try:
             name_box = self.driver.find_element(By.ID, form_type.name)
             name_box.send_keys(name)
@@ -143,30 +193,14 @@ class Selenium():
             info_box.send_keys(input_text)
         time.sleep(1)
 
+        if not self.fill_captcha(captcha_solution):
+            print("error filling captcha")
+            
+        time.sleep(1)
         self.submit()
 
             time.sleep(2)
             print("form submitted - running again")
-
-        elif (self.check_exists_by_id("et_pb_contact_name_0")):
-            name_box = self.driver.find_element(By.ID, "et_pb_contact_name_0")
-            name_box.send_keys(name)
-            email_box = self.driver.find_element(By.ID, "et_pb_contact_email_0")
-            email_box.send_keys(name.replace(" ", "") + str(random.randint(100000,500000)) + "@gmail.com")
-            location_box = self.driver.find_element(By.ID, "et_pb_contact_location_of_show_0")
-            location_box.send_keys(random.choice(cities) + ", TX")
-            info_box = self.driver.find_element(By.ID, "et_pb_contact_other_info_0")
-            info_box.send_keys(input_text)
-#            self.wait.until(lambda x: self.check_captcha())
-#            self.wait.until(lambda x: self.check_recaptcha())
-            try:
-                self.driver.find_element(By.XPATH, "//button[@class='et_builder_submit_button']").click()
-            except NoSuchElementException:
-                print("manually submitted")
-
-            print("form submitted")
-        else:
-            print("Looks like they may have found a way to beat this scraper. Perhaps you could help update it!")
 
 
 form_filler = Selenium()
