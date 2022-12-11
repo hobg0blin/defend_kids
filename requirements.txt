@@ -1,4 +1,5 @@
 async-generator==1.10
+anticaptchaofficial==1.0.45
 attrs==22.1.0
 certifi==2022.12.7
 charset-normalizer==2.1.1
