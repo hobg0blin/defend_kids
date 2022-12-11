@@ -29,7 +29,7 @@ form_types = [
     ["et_pb_contact_name_0", "et_pb_contact_email_0", "et_pb_contact_location_of_show_0", "et_pb_contact_other_info_0", "et_builder_submit_button"],
 ]
 
-
+# finding the submit button seems to work well by looking for type=submit
 submit_buttons = [
     # [By.ID, "gform_submit_button_2"],
     [By.XPATH, "//button[@type='submit']"]
@@ -63,8 +63,8 @@ class Selenium():
         self.wait.until(lambda x: self.check_has_button())
         time.sleep(1)
         self.fill_form()
-        self.driver.close()
-        self.__init__()
+        # self.driver.close()
+        # self.__init__()
         self.run()
 
     def check_has_button(self):
@@ -116,18 +116,19 @@ class Selenium():
                 # if self.check_exists_by_id(form_type.name):
                     # return form_type
             except NoSuchElementException:
-                print(f"not {form_type.name}")
+                print(f"form_type is not {form_type.name}")
                 continue
-
         print("Looks like they may have found a way to beat this scraper. Perhaps you could help update it!")
         self.run()
+        
+    # it might be possible to get the form element and run its submit method instead of finding the submit button
     def submit(self):
         for button in submit_buttons:
             print(f"trying button {button[1]}")
             try:
                 self.driver.find_element(button[0], button[1]).click()
                 return
-        except NoSuchElementException:
+            except NoSuchElementException:
                 print(f"couldn't find button {button[1]}")
     def init_solver(self):
         api_key = os.getenv("ANTICAPTCHA_API_KEY")
@@ -140,8 +141,9 @@ class Selenium():
         self.solver.set_verbose(1)
         self.solver.set_key(api_key)
         self.solver.set_website_url("https://www.defendkidstx.com/")
+        # found in the recaptcha request
         self.solver.set_website_key("6Lf4g08jAAAAADLHLYYA6jsr0qXWgOM_btlJP3iD")
-        # use_solver determines if anything runs when any anti-captcha functions is called
+        # use_solver determines if anything runs when any anti-captcha function is called
         self.use_solver = True
 
     def get_captcha_solution(self) -> str:
@@ -149,11 +151,13 @@ class Selenium():
             print("Anti-Captcha Disabled")
             return ""
         print("[BEGIN CAPTCHA SOLVE]")
+        # solve_and_return_solution blocks until completed
         g_response = self.solver.solve_and_return_solution()
         if g_response != 0:
             print("g-response: "+g_response)
         else:
-            print("task finished with error "+self.solver.error_code)
+            print("anticaptcha task finished with error "+self.solver.error_code)
+            # probably not the best idea to just exit on error, could be handled better
             sys.exit(2)
         print("[END CAPTCHA SOLVE]")
         return g_response
@@ -162,8 +166,8 @@ class Selenium():
         if not self.use_solver:
             return True
         try:
-            element = self.driver.find_element(
-                By.XPATH, ("//textarea[@name='g-recaptcha-response']"))
+            element = self.driver.find_element(By.XPATH, ("//textarea[@name='g-recaptcha-response']"))
+            # I was having issues using send_keys, so we're setting the form value directly
             element.__setattr__("value", captcha_solution)
             # element.send_keys(captcha_solution)
         except NoSuchElementException:
@@ -178,6 +182,7 @@ class Selenium():
         form_type = self.get_form_type()
         captcha_solution = self.get_captcha_solution()
         try:
+            # if the form hasn't opened properly, this will raise an error and retry
             name_box = self.driver.find_element(By.ID, form_type.name)
             name_box.send_keys(name)
         except:
@@ -187,10 +192,11 @@ class Selenium():
         email_box = self.driver.find_element(By.ID, form_type.email)
         email_box.send_keys(name.replace(
                 " ", "") + str(random.randint(100000, 500000)) + "@gmail.com")
+        # Location cannot contain any special characters, only letters and numbers
         location_box = self.driver.find_element(By.ID, form_type.location)
         location_box.send_keys(random.choice(cities))
         info_box = self.driver.find_element(By.ID, form_type.info)
-            info_box.send_keys(input_text)
+        info_box.send_keys(input_text)
         time.sleep(1)
 
         if not self.fill_captcha(captcha_solution):
@@ -199,8 +205,8 @@ class Selenium():
         time.sleep(1)
         self.submit()
 
-            time.sleep(2)
-            print("form submitted - running again")
+        time.sleep(2)
+        print("form submitted - running again")
 
 
 form_filler = Selenium()
