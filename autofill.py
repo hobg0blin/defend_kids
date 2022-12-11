@@ -21,6 +21,26 @@ input_text = ""
 for (i) in range(random.randint(1, 10)):
     input_text += model.make_sentence()
 
+# [name, email, location, info]
+form_types = [
+    ["input_2_1", "input_2_3", "input_2_4", "input_2_5", "gform_submit_button_2"],
+    ["et_pb_contact_name_0", "et_pb_contact_email_0", "et_pb_contact_location_of_show_0", "et_pb_contact_other_info_0", "et_builder_submit_button"],
+]
+
+
+submit_buttons = [
+    # [By.ID, "gform_submit_button_2"],
+    [By.XPATH, "//button[@type='submit']"]
+]
+
+class FormType():
+    def __init__(self, name, email, location, info):
+        self.name = name
+        self.email = email
+        self.location = location
+        self.info = info
+
+
 class Selenium():
     def __init__(self):
         self.driver = uc.Chrome(use_subprocess=True, version_main=os.getenv('CHROME_VERSION'))
@@ -70,8 +90,35 @@ class Selenium():
         return False
     def check_exists_by_id(self, id):
         try:
-            self.driver.find_element(By.ID, id)
+            element = self.driver.find_element(By.ID, id)
+            if element:
+                return element.is_displayed()
         except NoSuchElementException:
+            return False
+    def get_form_type(self) -> FormType:
+        for check_type in form_types:
+            print(f"checking name {check_type[0]}")
+            print(check_type)
+            form_type = FormType(check_type[0], check_type[1], check_type[2], check_type[3])
+            try:
+                self.driver.find_element(By.ID, form_type.name).is_displayed()
+                return form_type
+                # if self.check_exists_by_id(form_type.name):
+                    # return form_type
+            except NoSuchElementException:
+                print(f"not {form_type.name}")
+                continue
+
+        print("Looks like they may have found a way to beat this scraper. Perhaps you could help update it!")
+        self.run()
+    def submit(self):
+        for button in submit_buttons:
+            print(f"trying button {button[1]}")
+            try:
+                self.driver.find_element(button[0], button[1]).click()
+                return
+        except NoSuchElementException:
+                print(f"couldn't find button {button[1]}")
             return False
         return True
 
@@ -79,22 +126,25 @@ class Selenium():
         print("filling out form")
         name = names.get_full_name()
         # they have two alternate input forms, presumably to prevent me from doing things like this - this should account for both
-        if (self.check_exists_by_id("input_2_1")):
-            name_box = self.driver.find_element(By.ID, "input_2_1")
+        form_type = self.get_form_type()
+        try:
+            name_box = self.driver.find_element(By.ID, form_type.name)
             name_box.send_keys(name)
-            email_box = self.driver.find_element(By.ID, "input_2_3")
-            email_box.send_keys(name.replace(" ", "") + str(random.randint(100000,500000)) + "@gmail.com")
-            location_box = self.driver.find_element(By.ID, "input_2_4")
-            location_box.send_keys(random.choice(cities) + ", TX")
-            info_box = self.driver.find_element(By.ID, "input_2_5")
+        except:
+            print("error filling form, reloading page")
+            self.driver.get("https://defendkidstx.com/")
+            return
+        email_box = self.driver.find_element(By.ID, form_type.email)
+        email_box.send_keys(name.replace(
+                " ", "") + str(random.randint(100000, 500000)) + "@gmail.com")
+        location_box = self.driver.find_element(By.ID, form_type.location)
+        location_box.send_keys(random.choice(cities))
+        info_box = self.driver.find_element(By.ID, form_type.info)
             info_box.send_keys(input_text)
-            time.sleep(5)
-            self.wait.until(lambda x: self.check_recaptcha())
-#            self.wait.until(lambda x: self.check_captcha())
-            try:
-                self.driver.find_element(By.ID, "gform_submit_button_2").click()
-            except NoSuchElementException:
-                print("manually submitted")
+        time.sleep(1)
+
+        self.submit()
+
             time.sleep(2)
             print("form submitted - running again")
 
