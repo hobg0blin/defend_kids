@@ -59,6 +59,7 @@ class Selenium():
         if not self.use_solver:
             print("Please complete captcha")
             self.wait.until(lambda x: self.check_captcha())
+            self.wait.until(lambda x: self.check_recaptcha())
 
         self.wait.until(lambda x: self.check_has_button())
         time.sleep(1)
@@ -120,7 +121,7 @@ class Selenium():
                 continue
         print("Looks like they may have found a way to beat this scraper. Perhaps you could help update it!")
         self.run()
-        
+
     # it might be possible to get the form element and run its submit method instead of finding the submit button
     def submit(self):
         for button in submit_buttons:
@@ -164,6 +165,7 @@ class Selenium():
 
     def fill_captcha(self, captcha_solution):
         if not self.use_solver:
+            self.wait.until(lambda x: self.check_recaptcha())
             return True
         try:
             element = self.driver.find_element(By.XPATH, ("//textarea[@name='g-recaptcha-response']"))
@@ -201,7 +203,7 @@ class Selenium():
 
         if not self.fill_captcha(captcha_solution):
             print("error filling captcha")
-            
+
         time.sleep(1)
         self.submit()
 
